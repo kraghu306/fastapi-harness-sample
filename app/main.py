@@ -1,11 +1,37 @@
+"""
+Main FastAPI application module.
+"""
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 
 from .schemas import TodoTaskModel
+from app.users.router import router as users_router
+from app.orders.router import router as orders_router
+from app.payments.router import router as payments_router
+from app.analytics.router import router as analytics_router
 
 
-app = FastAPI()
+app = FastAPI(
+    title="FastAPI Harness Sample",
+    description="A test-rich FastAPI playground for advanced testing scenarios",
+    version="0.1.0"
+)
 
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(users_router)
+app.include_router(orders_router)
+app.include_router(payments_router)
+app.include_router(analytics_router)
 
 all_tasks: dict = {}
 
@@ -47,5 +73,15 @@ def tasks():
 
 
 @app.get("/")
-def home():
-    return "Welcome to our TODO application. Add /docs to the current URL to visit our docs page"
+async def root():
+    """Root endpoint."""
+    return {
+        "message": "Welcome to FastAPI Harness Sample",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc"
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "healthy"}
